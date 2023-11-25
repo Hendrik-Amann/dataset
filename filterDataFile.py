@@ -55,6 +55,7 @@ def read_args():
   parser = argparse.ArgumentParser()
   parser.add_argument("--data_root", type=str, help="")
   parser.add_argument("--partitions", type=int, default=500, help="")
+  parser.add_argument("--memory", type=str, default="1g", help="")
 
   args, unknown = parser.parse_known_args()
   return args, unknown
@@ -68,6 +69,7 @@ def main():
     os.makedirs(output_dir)
       
   conf = pyspark.SparkConf()
+  conf.set('spark.driver.memory', args.memory)
   sc = pyspark.SparkContext(conf=conf)
   spark = pyspark.sql.SparkSession(sc)
 
@@ -80,19 +82,30 @@ def main():
   df = df.where(F.col("PXtextT") <= 16384)
   rowsTokenFilter = df.count()
 
+  print("filter 16384")
   df = df.withColumn("match", section_match(b_keywords)("section_names")).where(F.col("match") == True).drop("match")
+  print("filter match")
   rowsSectionFilter = df.count()
   df = df.orderBy(F.col("LEDtextT"), F.col("PXtextT"), ascending=False).limit(5000).drop("LEDtextT", "PXtextT").orderBy(F.rand())
-  
+  print("filter 5000")
   df.write.json(path=output_dir, mode="overwrite")
 
   os.system("cat " + output_dir + "/part-* >" + args.data_root + "/selectedSamples.txt")
   os.system("rm -r " + output_dir)
 
-  with open(os.path.join(arg.data_root, "/filterLog.txt"), "w+") as f:
-    f.write("Total number of articles in original val and test:", allArticles,"\n")
-    f.write("Number of articles <=16384 tokens:", rowsTokenFilter,"\n")
-    f.write("Number of articles with DANCER section match:", rowsSectionFilter,"\n")
+  print(os.path.join(args.data_root,"filterLog.txt"))
+  print(os.path.join(args.data_root))
+  print(args.data_root)
+  with open(os.path.join(args.data_root, "filterLog.txt"), "w+") as f:
+    f.write("Total number of articles in original val and test: ")
+    f.write(str(allArticles))
+    f.write("\n")
+    f.write("Number of articles <= 16384 tokens: ")
+    f.write(str(rowsTokenFilter))
+    f.write("\n")
+    f.write("Number of articles with DANCER section match: ")
+    f.write(str(rowsSectionFilter))
+    f.write("\n")
 
 if __name__ == "__main__":
   main()
