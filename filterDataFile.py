@@ -75,15 +75,24 @@ def main():
 
   df = spark.read.json(os.path.join(args.data_root, "countedTokens.txt")).repartition(args.partitions, "article_id")
 
+  allArticles = df.count()
   df = df.where(F.col("LEDtextT") <= 16384)
   df = df.where(F.col("PXtextT") <= 16384)
+  rowsTokenFilter = df.count()
+
   df = df.withColumn("match", section_match(b_keywords)("section_names")).where(F.col("match") == True).drop("match")
+  rowsSectionFilter = df.count()
   df = df.orderBy(F.col("LEDtextT"), F.col("PXtextT"), ascending=False).limit(5000).drop("LEDtextT", "PXtextT").orderBy(F.rand())
   
   df.write.json(path=output_dir, mode="overwrite")
 
   os.system("cat " + output_dir + "/part-* >" + args.data_root + "/selectedSamples.txt")
   os.system("rm -r " + output_dir)
+
+  with open(os.path.join(arg.data_root, "/filterLog.txt"), "w+") as f:
+    f.write("Total number of articles in original val and test:", allArticles,"\n")
+    f.write("Number of articles <=16384 tokens:", rowsTokenFilter,"\n")
+    f.write("Number of articles with DANCER section match:", rowsSectionFilter,"\n")
 
 if __name__ == "__main__":
   main()
