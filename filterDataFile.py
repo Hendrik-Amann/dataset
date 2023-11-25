@@ -6,6 +6,7 @@ import pyspark
 from pyspark.sql import functions as F
 from pyspark.sql import types as spark_types
 
+# Dancer generation does not include literature and limitations sections; filter files where can get at least 1 section
 KEYWORDS = {
     'introduction': 'i',
     'case': 'i',
@@ -14,12 +15,12 @@ KEYWORDS = {
     'objectives': 'i',
     'aim': 'i',
     'summary': 'i',
-    'findings': 'l',
+    #'findings': 'l',
     'background': 'i',
     'background/aims': 'i',
-    'literature': 'l',
-    'studies': 'l',
-    'related': 'l',
+    #'literature': 'l',
+    #'studies': 'l',
+    #'related': 'l',
     'methods': 'm',
     'method': 'm',
     'techniques': 'm',
@@ -30,11 +31,13 @@ KEYWORDS = {
     'experiments': 'r',
     'experimental': 'r',
     'discussion': 'c',
-    'limitations': 'd',
+    #'limitations': 'd',
     'conclusion': 'c',
     'conclusions': 'c',
     'concluding': 'c'}
 
+#HA: the function below is based on section_identify method from DANCER code
+#HA: instead of assigning a section type, this method checks if at least 1 section can be found based on the keyword search
 def section_match(keywords):
     def section_match_(sections):
         match = False
