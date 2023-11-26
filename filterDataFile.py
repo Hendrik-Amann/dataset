@@ -51,6 +51,22 @@ def section_match(keywords):
         return 1 if match else 0
     return F.udf(section_match_, spark_types.ByteType())
 
+def clean_abstract(abstract):
+  cleaned = [None] * len(abstract)
+  for i in range(len(abstract)):
+    #remove tag with additional whitespace
+    tmp = re.sub("<S> ", "", abstract[i])
+    tmp = re.sub(" </S>", "", tmp)
+    tmp = re.sub(" @xcite", "", tmp)
+    tmp = re.sub(" @xmath\d+", "", tmp)
+    #remove tag in case there is no whitespace
+    tmp = re.sub("<S>", "", tmp)
+    tmp = re.sub("</S>", "", tmp)
+    tmp = re.sub("@xcite", "", tmp)
+    tmp = re.sub("@xmath\d+", "", tmp)
+    cleaned[i] = tmp
+  return cleaned
+
 def read_args():
   parser = argparse.ArgumentParser()
   parser.add_argument("--data_root", type=str, help="")
@@ -75,27 +91,26 @@ def main():
 
   b_keywords = sc.broadcast(KEYWORDS)
 
-  df = spark.read.json(os.path.join(args.data_root, "countedTokens.txt")).repartition(args.partitions, "article_id")
+  clean_abstract_udf = F.udf(clean_abstract, spark_types.ArrayType(spark_types.StringType()))
 
+  df = spark.read.json(os.path.join(args.data_root, "countedTokens.txt")).repartition(args.partitions, "article_id")
   allArticles = df.count()
+
   df = df.where(F.col("LEDtextT") <= 16384)
   df = df.where(F.col("PXtextT") <= 16384)
   rowsTokenFilter = df.count()
 
-  print("filter 16384")
   df = df.withColumn("match", section_match(b_keywords)("section_names")).where(F.col("match") == True).drop("match")
-  print("filter match")
   rowsSectionFilter = df.count()
-  df = df.orderBy(F.col("LEDtextT"), F.col("PXtextT"), ascending=False).limit(5000).drop("LEDtextT", "PXtextT").orderBy(F.rand())
-  print("filter 5000")
+
+  df = df.orderBy(F.col("LEDtextT"), F.col("PXtextT"), ascending=False).limit(5000).drop("LEDtextT", "PXtextT")
+  df = df.withColumn("abstract_text", clean_abstract_udf("abstract_text"))
+
   df.write.json(path=output_dir, mode="overwrite")
 
   os.system("cat " + output_dir + "/part-* >" + args.data_root + "/selectedSamples.txt")
   os.system("rm -r " + output_dir)
 
-  print(os.path.join(args.data_root,"filterLog.txt"))
-  print(os.path.join(args.data_root))
-  print(args.data_root)
   with open(os.path.join(args.data_root, "filterLog.txt"), "w+") as f:
     f.write("Total number of articles in original val and test: ")
     f.write(str(allArticles))
