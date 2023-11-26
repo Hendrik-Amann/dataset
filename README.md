@@ -10,7 +10,7 @@ Python package's version:
 - Transformers transformers 4.34.0.dev0
 - Pandas 2.1.0
 
-1. run tokenizeDataFile.py with val and test file as input; cleans Section Names, counts tokens with pegasus and led tokenizer for article texts; returns single file with 2 more columns (token counts)
+1. run tokenizeDataFile.py with original train file as input; cleans Section Names, counts tokens with pegasus and led tokenizer for article texts; returns single file with 2 more columns (token counts)
 2. run filterDataFile.py with file from step 1 as input; filters for <= 16384 tokens and filters for at least 1 match for dancer, top 500 and shuffle; returns single file
 3. run splitDataFile.py with file from step 2, create train, val, test files
 4. run basicdataset with files from step 3; drops some unncessary columns and concatenates; generate train, val, test files for basictest
