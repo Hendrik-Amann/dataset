@@ -5,6 +5,7 @@ Used package versions on Ubuntu 22.04.1 LTS:
 - Python 3.10.2
 - Spark 3.2.0
 - openjdk 11.0.20.1
+  
 Python package's version:
 - PySpark 3.2.0
 - Transformers transformers 4.34.0.dev0
