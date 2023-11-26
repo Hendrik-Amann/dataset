@@ -18,6 +18,7 @@ def read_args():
   parser = argparse.ArgumentParser()
   parser.add_argument("--data_root", type=str, help="")
   parser.add_argument("--partitions", type=int, default=500, help="")
+  parser.add_argument("--memory", type=str, default="1g", help="")
 
   args, unknown = parser.parse_known_args()
   return args, unknown
@@ -27,6 +28,7 @@ def main():
   args, unknown = read_args()
   
   conf = pyspark.SparkConf()
+  conf.set("spark.driver.memory", args.memory)
   sc = pyspark.SparkContext(conf=conf)
   spark = pyspark.sql.SparkSession(sc)
 
@@ -45,10 +47,10 @@ def main():
   clean_section_names_udf = F.udf(clean_section_names, spark_types.ArrayType(spark_types.StringType()))
   count_LEDtokens_udf = F.udf(count_LEDtokens, spark_types.IntegerType())
   count_PXtokens_udf = F.udf(count_PXtokens, spark_types.IntegerType())
-  orig_test = os.path.join(args.data_root, "test.txt")
-  orig_val = os.path.join(args.data_root, "val.txt")
-  test_df = spark.read.json(orig_test)
-  df = test_df.union(spark.read.json(orig_val)).repartition(args.partitions, "article_id")
+  df = spark.read.json(os.path.join(args.data_root, "train.txt")).repartition(args.partitions, "article_id")
+  #orig_val = os.path.join(args.data_root, "val.txt")
+  #test_df = spark.read.json(orig_test)
+  #df = test_df.union(spark.read.json(orig_val)).repartition(args.partitions, "article_id")
 
   df = df.withColumn("section_names", clean_section_names_udf("section_names"))
   df = df.withColumn("LEDtextT", count_LEDtokens_udf(F.concat_ws(" ", F.col("article_text")))).withColumn("PXtextT", count_PXtokens_udf(F.concat_ws(" ", F.col("article_text"))))
