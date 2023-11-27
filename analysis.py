@@ -16,6 +16,7 @@ def read_args():
   parser.add_argument("--data_root", type=str, help="")
   parser.add_argument("--text_col", type=str)
   parser.add_argument("--sum_col", type=str)
+  parser.add_argument("--type", type=str)
   
   args, unknown = parser.parse_known_args()
   return args, unknown
@@ -58,9 +59,19 @@ def main():
     df['LEDtext'] = df[args.text_col].apply(getLEDTokenCount)
     df['PXsum'] = df[args.sum_col].apply(getPXTokenCount)
     df['PXtext'] = df[args.text_col].apply(getPXTokenCount)
-    
+
+    if args.type == "dancer":
+      if file != "test":
+        df = df[df['section_id'].isin(["i", "m", "r", "l", "c"])]
+      else:
+        df = df[df['section_id'].isin(["i", "m", "r", "c"])]
  
-    with open(os.path.join(args.data_root, 'analysis_'+file+".txt"), "w+") as writer:
+    if args.type == "dancer":
+      res = os.path.join(args.data_root, "analysis_dancer_"+file+".txt")
+    else:
+      res = os.path.join(args.data_root, "analysis_"+file+".txt")
+
+    with open(res, "w+") as writer:
       writer.write("Total entries:"+str(df['article_id'].count())+"\n")
       writer.write("Distinct article_ids:"+str(df['article_id'].nunique())+"\n")
     
