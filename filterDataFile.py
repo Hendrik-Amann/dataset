@@ -112,7 +112,7 @@ def main():
   os.system("rm -r " + output_dir)
 
   with open(os.path.join(args.data_root, "filterLog.txt"), "w+") as f:
-    f.write("Total number of articles in original val and test: ")
+    f.write("Total number of articles in countedTokens: ")
     f.write(str(allArticles))
     f.write("\n")
     f.write("Number of articles <= 16384 tokens: ")
