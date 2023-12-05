@@ -26,7 +26,7 @@ def main():
 
   files = ["train", "validation", "test"]
 
-  LEDtokenizer = AutoTokenizer.from_pretrained("allenai/led-large-16384", revision = "3833578")
+  LEDtokenizer = AutoTokenizer.from_pretrained("allenai/led-base-16384", revision = "3833578")
   PXtokenizer = AutoTokenizer.from_pretrained("google/pegasus-x-base", revision = "cd8a69a")
   Ptokenizer = AutoTokenizer.from_pretrained("google/pegasus-large", revision = "dec7796")
 
