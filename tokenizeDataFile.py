@@ -36,8 +36,8 @@ def main():
   if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
-  LEDtokenizer = AutoTokenizer.from_pretrained("allenai/led-base-16384")
-  PXtokenizer = AutoTokenizer.from_pretrained("google/pegasus-x-base")
+  LEDtokenizer = AutoTokenizer.from_pretrained("allenai/led-base-16384", revision="3833578")
+  PXtokenizer = AutoTokenizer.from_pretrained("google/pegasus-x-base", revision="cd8a69a")
 
   def count_LEDtokens(text):
     return LEDtokenizer.encode(text, return_tensors='pt').size()[1]
