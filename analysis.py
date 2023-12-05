@@ -26,14 +26,18 @@ def main():
 
   files = ["train", "validation", "test"]
 
-  LEDtokenizer = AutoTokenizer.from_pretrained("allenai/led-large-16384-arxiv")
-  PXtokenizer = AutoTokenizer.from_pretrained("google/pegasus-x-base")
+  LEDtokenizer = AutoTokenizer.from_pretrained("allenai/led-large-16384", revision = "3833578")
+  PXtokenizer = AutoTokenizer.from_pretrained("google/pegasus-x-base", revision = "cd8a69a")
+  Ptokenizer = AutoTokenizer.from_pretrained("google/pegasus-large", revision = "dec7796")
 
   def getLEDTokenCount(text):
     return LEDtokenizer.encode(text, return_tensors='pt').size()[1]
 
   def getPXTokenCount(text):
     return PXtokenizer.encode(text, return_tensors='pt').size()[1]
+
+  def getPTokenCount(text):
+    return Ptokenizer.encode(text, return_tensors='pt').size()[1]
 
   for file in files:
 
@@ -59,6 +63,8 @@ def main():
     df['LEDtext'] = df[args.text_col].apply(getLEDTokenCount)
     df['PXsum'] = df[args.sum_col].apply(getPXTokenCount)
     df['PXtext'] = df[args.text_col].apply(getPXTokenCount)
+    df['Psum'] = df[args.sum_col].apply(getPTokenCount)
+    df['Ptext'] = df[args.text_col].apply(getPTokenCount)
 
     if args.type == "dancer":
       if file != "test":
@@ -96,6 +102,17 @@ def main():
       writer.write("Pegasus-X: Standard deviation Text Tokens:"+str(df['PXtext'].std())+"\n")
       writer.write("Pegasus-X: Min Text Tokens:"+str(df['PXtext'].min())+"\n")
       writer.write("Pegasus-X: Max Text Tokens:"+str(df['PXtext'].max())+"\n")
+
+      writer.write("Pegasus: Avg Summary Tokens:"+str(df['Psum'].mean())+"\n")
+      writer.write("Pegasus: Median Summary Tokens:"+str(df['Psum'].median())+"\n")
+      writer.write("Pegasus: Standard deviation Summary Tokens:"+str(df['Psum'].std())+"\n")
+      writer.write("Pegasus: Min Summary Tokens:"+str(df['Psum'].min())+"\n")
+      writer.write("Pegasus: Max Summary Tokens:"+str(df['Psum'].max())+"\n")
+      writer.write("Pegasus: Avg Text Tokens:"+str(df['Ptext'].mean())+"\n")
+      writer.write("Pegasus: Median Text Tokens:"+str(df['Ptext'].median())+"\n")
+      writer.write("Pegasus: Standard deviation Text Tokens:"+str(df['Ptext'].std())+"\n")
+      writer.write("Pegasus: Min Text Tokens:"+str(df['Ptext'].min())+"\n")
+      writer.write("Pegasus: Max Text Tokens:"+str(df['Ptext'].max())+"\n")
 
 if __name__ == "__main__":
   main()
