@@ -1,6 +1,5 @@
 import os
 import argparse
-import math
 import pyspark
 from pyspark.sql import functions as F
 from pyspark.sql import types as spark_types
