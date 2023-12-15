@@ -10,8 +10,6 @@ def read_args():
   parser.add_argument("--data_root", type=str, help="")
   parser.add_argument("--partitions", type=int, default=500, help="")
   parser.add_argument("--memory", type=str, default="1g", help="")
-  parser.add_argument("--trainSize", type=int, default=4000, help="")
-  parser.add_argument("--valSize", type=int, default=500, help="")
 
   args, unknown = parser.parse_known_args()
   return args, unknown
@@ -27,9 +25,9 @@ def main():
   data_path = os.path.join(args.data_root, 'selectedSamples.txt')
   df = spark.read.json(data_path).repartition(500, "article_id").orderBy(F.rand())
 
-  train_df = df.limit(args.trainSize)
+  train_df = df.limit(round(df.count()*0.8))
   valid_test_df = df.filter(~df["article_id"].isin(list(train_df.select(train_df.article_id).toPandas()['article_id'])))
-  valid_df = valid_test_df.limit(args.valSize)
+  valid_df = valid_test_df.limit(round(valid_test_df.count()*0.5))
   test_df = valid_test_df.filter(~valid_test_df["article_id"].isin(list(valid_df.select(train_df.article_id).toPandas()['article_id'])))
 
   train_df.write.json(path=os.path.join(args.data_root, "train"), mode="overwrite")
