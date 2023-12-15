@@ -47,7 +47,7 @@ def main():
   clean_section_names_udf = F.udf(clean_section_names, spark_types.ArrayType(spark_types.StringType()))
   count_LEDtokens_udf = F.udf(count_LEDtokens, spark_types.IntegerType())
   count_PXtokens_udf = F.udf(count_PXtokens, spark_types.IntegerType())
-  df = spark.read.json(os.path.join(args.data_root, "train.txt")).repartition(args.partitions, "article_id")
+  df = spark.read.json(os.path.join(args.data_root, "orig_train.txt")).repartition(args.partitions, "article_id")
   #orig_val = os.path.join(args.data_root, "val.txt")
   #test_df = spark.read.json(orig_test)
   #df = test_df.union(spark.read.json(orig_val)).repartition(args.partitions, "article_id")
