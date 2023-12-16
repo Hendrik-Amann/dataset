@@ -80,6 +80,12 @@ def main():
     with open(res, "w+") as writer:
       writer.write("Total entries:"+str(df['article_id'].count())+"\n")
       writer.write("Distinct article_ids:"+str(df['article_id'].nunique())+"\n")
+
+      if 'section_id' in df.columns:
+        writer.write("Avg number of sections per article:"+str(df.groupby('article_id').size().mean())+"\n")
+        writer.write("Standard deviation of sections per article:"+str(df.groupby('article_id').size().std())+"\n")
+        writer.write("Min number of sections per article:"+str(df.groupby('article_id').size().min())+"\n")
+        writer.write("Max number of sections per article:"+str(df.groupby('article_id').size().max())+"\n")
     
       writer.write("LED: Avg Summary Tokens:"+str(df['LEDsum'].mean())+"\n")
       writer.write("LED: Median Summary Tokens:"+str(df['LEDsum'].median())+"\n")
